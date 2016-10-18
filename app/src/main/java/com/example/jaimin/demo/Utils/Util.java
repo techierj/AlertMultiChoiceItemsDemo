@@ -27,7 +27,7 @@ public class Util {
     }
 
     /**
-     * @param tvString            = textview already set values
+     * @param tvString            = textview test (already set values seperated by comma)
      * @param list                = original arraylist containing all objects
      * @param alertClickListeners = listeners to manage click events
      * @param view

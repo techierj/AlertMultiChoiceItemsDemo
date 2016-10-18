@@ -13,7 +13,6 @@ import com.example.jaimin.demo.model.Media;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, AlertClickListeners {
-    private static final String TAG = "MainActivity";
     ArrayList<Media> mediaArrayList = new ArrayList<>();
     ArrayList<Category> categoryArrayList = new ArrayList<>();
     private TextView tvMedia, tvCategory;
