@@ -1,28 +1,22 @@
 package com.example.jaimin.demo;
 
-import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.test.TouchUtils;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.jaimin.demo.Utils.Util;
+import com.example.jaimin.demo.listener.AlertClickListeners;
 import com.example.jaimin.demo.model.Category;
 import com.example.jaimin.demo.model.Media;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AlertClickListeners {
     private static final String TAG = "MainActivity";
-    private TextView tvList;
     ArrayList<Media> mediaArrayList = new ArrayList<>();
     ArrayList<Category> categoryArrayList = new ArrayList<>();
-    private boolean[] checkedItems;
-
+    private TextView tvMedia, tvCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,77 +27,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setDummyData();
     }
 
-    private void setDummyData() {
-        for (int i = 0; i < 50; i++) {
-            mediaArrayList.add(new Media(String.valueOf(i + 1), "Media "+i));
-            categoryArrayList.add(new Category(String.valueOf(i + 1), "Category 1"+i));
-        }
+    private void setIds() {
+        tvMedia = (TextView) findViewById(R.id.tv_list_media);
+        tvCategory = (TextView) findViewById(R.id.tv_list_category);
+
+        tvMedia.setOnClickListener(this);
+        tvCategory.setOnClickListener(this);
     }
 
-    private void setIds() {
-        tvList = (TextView) findViewById(R.id.tv_list);
-        tvList.setOnClickListener(this);
+    private void setDummyData() {
+        for (int i = 1; i <= 50; i++) {
+            mediaArrayList.add(new Media(String.valueOf(i), "Media " + i));
+            categoryArrayList.add(new Category(String.valueOf(i), "Category 1" + i));
+        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_list:
-                showListPopup(tvList.getText().toString());
+            case R.id.tv_list_media:
+                Util.getInstance().showListPopup(tvMedia.getText().toString(),
+                        mediaArrayList, this, v, MainActivity.this);
+                break;
+
+            case R.id.tv_list_category:
+                Util.getInstance().showListPopup(tvCategory.getText().toString(),
+                        categoryArrayList, this, v, MainActivity.this);
                 break;
         }
     }
 
-    private void showListPopup(final String tvString) {
-        categoryArrayList.toArray();
-        final Media[] items = (Media[]) mediaArrayList.toArray(new Media[mediaArrayList.size()]);
-        String[] checkedValue = tvString.split(",");
-        final String[] itemString = new String[items.length];
-        checkedItems = new boolean[items.length];
-
-
-        if (checkedValue != null) {
-            for (int i = 0; i < items.length; i++) {
-                String value = items[i].getName();
-                itemString[i] = value;
-                for (int j = 0; j < checkedValue.length; j++) {
-                    if (checkedValue[j].equals(value)) {
-                        checkedItems[i] = true;
-                        break;
-                    }
-                }
-            }
+    @Override
+    public void onAlertPositiveClick(View view, String string) {
+        switch (view.getId()) {
+            case R.id.tv_list_media:
+                tvMedia.setText(string);
+                break;
+            case R.id.tv_list_category:
+                tvCategory.setText(string);
+                break;
         }
+    }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < checkedItems.length; i++) {
-                    if (checkedItems[i]) {
-                        Log.d(TAG, "onClick: " + i + " " + itemString[i]);
-                        sb.append(mediaArrayList.get(i).getName() + ",");
-                    }
-                }
-                tvList.setText(sb.toString());
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        });
-
-
-        builder.setMultiChoiceItems(itemString, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                checkedItems[which] = isChecked;
-            }
-        });
-        builder.create();
-        builder.show();
+    @Override
+    public void onAlertNegativeClick(View view, String string) {
     }
 }
