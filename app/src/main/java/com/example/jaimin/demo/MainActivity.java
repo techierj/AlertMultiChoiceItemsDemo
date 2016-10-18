@@ -4,21 +4,19 @@ import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.test.TouchUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.jaimin.demo.listener.AlertClickListeners;
 import com.example.jaimin.demo.model.Category;
 import com.example.jaimin.demo.model.Media;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AlertClickListeners {
     private static final String TAG = "MainActivity";
-    private TextView tvList;
+    private TextView tvMedia, tvCategory;
     ArrayList<Media> mediaArrayList = new ArrayList<>();
     ArrayList<Category> categoryArrayList = new ArrayList<>();
     private boolean[] checkedItems;
@@ -35,39 +33,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setDummyData() {
         for (int i = 0; i < 50; i++) {
-            mediaArrayList.add(new Media(String.valueOf(i + 1), "Media "+i));
-            categoryArrayList.add(new Category(String.valueOf(i + 1), "Category 1"+i));
+            mediaArrayList.add(new Media(String.valueOf(i + 1), "Media " + i));
+            categoryArrayList.add(new Category(String.valueOf(i + 1), "Category 1" + i));
         }
     }
 
     private void setIds() {
-        tvList = (TextView) findViewById(R.id.tv_list);
-        tvList.setOnClickListener(this);
+        tvMedia = (TextView) findViewById(R.id.tv_list_media);
+        tvCategory = (TextView) findViewById(R.id.tv_list_category);
+
+        tvMedia.setOnClickListener(this);
+        tvCategory.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_list:
-                showListPopup(tvList.getText().toString());
+            case R.id.tv_list_media:
+                showListPopup(tvMedia.getText().toString(), this, v, mediaArrayList);
+                break;
+
+            case R.id.tv_list_category:
+                showListPopup(tvCategory.getText().toString(), this, v, categoryArrayList);
                 break;
         }
     }
 
-    private void showListPopup(final String tvString) {
-        categoryArrayList.toArray();
-        final Media[] items = (Media[]) mediaArrayList.toArray(new Media[mediaArrayList.size()]);
-        String[] checkedValue = tvString.split(",");
-        final String[] itemString = new String[items.length];
-        checkedItems = new boolean[items.length];
+    private void showListPopup(final String tvString, final AlertClickListeners alertClickListeners, final View view,
+                               ArrayList<?> list) {
 
+        categoryArrayList.toArray();
+        String[] checkedValue = tvString.split(",");
+        final String[] itemString = new String[list.size()];
+        checkedItems = new boolean[list.size()];
+
+        if (list.size() > 0) {
+            if (list.get(0) instanceof Media) {
+                for (int i = 0; i < list.size(); i++) {
+                    Media media = (Media) list.get(i);
+                    itemString[i] = media.getName();
+                }
+            } else if (list.get(0) instanceof Category) {
+                for (int i = 0; i < list.size(); i++) {
+                    Category category = (Category) list.get(i);
+                    itemString[i] = category.getCategoryName();
+                }
+            }
+        }
 
         if (checkedValue != null) {
-            for (int i = 0; i < items.length; i++) {
-                String value = items[i].getName();
-                itemString[i] = value;
+            for (int i = 0; i < itemString.length; i++) {
                 for (int j = 0; j < checkedValue.length; j++) {
-                    if (checkedValue[j].equals(value)) {
+                    if (checkedValue[j].equals(itemString[i])) {
                         checkedItems[i] = true;
                         break;
                     }
@@ -82,17 +99,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < checkedItems.length; i++) {
                     if (checkedItems[i]) {
-                        Log.d(TAG, "onClick: " + i + " " + itemString[i]);
-                        sb.append(mediaArrayList.get(i).getName() + ",");
+                        sb.append(itemString[i] + ", ");
                     }
                 }
-                tvList.setText(sb.toString());
+                if (sb.length() > 2) {
+                    sb.setLength(sb.length() - 2);
+                }
+                alertClickListeners.onAlertPositiveClick(view, sb.toString());
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                alertClickListeners.onAlertNegativeClick(view, "");
             }
         });
 
@@ -105,5 +124,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         builder.create();
         builder.show();
+    }
+
+
+    @Override
+    public void onAlertPositiveClick(View view, String string) {
+        switch (view.getId()) {
+            case R.id.tv_list_media:
+                tvMedia.setText(string);
+                break;
+            case R.id.tv_list_category:
+                tvCategory.setText(string);
+                break;
+        }
+    }
+
+    @Override
+    public void onAlertNegativeClick(View view, String string) {
     }
 }
